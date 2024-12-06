@@ -1,0 +1,52 @@
+[tool.poetry]
+name = "trueskill"
+version = "1.0.0"
+description = "The video game rating system"
+authors = ["Hartorn <hartorn.github@gmail.com>", "Heungsub Lee <sub@subl.ee>"]
+readme = "README.md"
+packages = [{ include = "trueskill", from = "src" }]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<4"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
+pylint = "^3.3.2"
+black = "^24.10.0"
+isort = "^5.13.2"
+almost = "^0.1.5"
+mpmath = "^1.3.0"
+scipy = "^1.14.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pylint.reports]
+reports = "y"
+output-format = "colorized"
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+extend_skip_glob = [".history/*"]
+
+[tool.pylint.'MESSAGES CONTROL']
+disable = [
+    "missing-function-docstring",
+    "missing-class-docstring",
+    "missing-module-docstring",
+    "line-too-long",
+    "too-many-arguments",
+    "too-many-positional-arguments",
+    "too-many-instance-attributes",
+    "too-many-locals",
+    "too-few-public-methods",
+]
+enable = ["useless-suppression", "use-symbolic-message-instead"]
+
+[tool.pylint.master]
+fail-under = "9.69"

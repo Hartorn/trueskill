@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
    trueskill.mathematics
    ~~~~~~~~~~~~~~~~~~~~~
@@ -10,25 +9,22 @@
    :license: BSD, see LICENSE for more details.
 
 """
-from __future__ import absolute_import
 
 import copy
 import math
+
 try:
     from numbers import Number
 except ImportError:
-    Number = (int, long, float, complex)
+    Number = (int, float, complex)
 
-from six import iterkeys
-
-
-__all__ = ['Gaussian', 'Matrix', 'inf']
+__all__ = ["Gaussian", "Matrix", "inf"]
 
 
-inf = float('inf')
+inf = float("inf")
 
 
-class Gaussian(object):
+class Gaussian:
     """A model for the normal distribution."""
 
     #: Precision, the inverse of the variance.
@@ -39,10 +35,10 @@ class Gaussian(object):
     def __init__(self, mu=None, sigma=None, pi=0, tau=0):
         if mu is not None:
             if sigma is None:
-                raise TypeError('sigma argument is needed')
-            elif sigma == 0:
-                raise ValueError('sigma**2 should be greater than 0')
-            pi = sigma ** -2
+                raise TypeError("sigma argument is needed")
+            if sigma == 0:
+                raise ValueError("sigma**2 should be greater than 0")
+            pi = sigma**-2
             tau = pi * mu
         self.pi = pi
         self.tau = tau
@@ -83,11 +79,11 @@ class Gaussian(object):
         return self.mu >= other.mu
 
     def __repr__(self):
-        return 'N(mu={:.3f}, sigma={:.3f})'.format(self.mu, self.sigma)
+        return f"N(mu={self.mu:.3f}, sigma={self.sigma:.3f})"
 
     def _repr_latex_(self):
-        latex = r'\mathcal{{ N }}( {:.3f}, {:.3f}^2 )'.format(self.mu, self.sigma)
-        return '$%s$' % latex
+        latex = rf"$\mathcal{{ N }}( {self.mu:.3f}, {self.sigma:.3f}^2 )"
+        return f"${latex}$"
 
 
 class Matrix(list):
@@ -98,35 +94,40 @@ class Matrix(list):
             f, src = src, {}
             size = [height, width]
             if not height:
+
                 def set_height(height):
                     size[0] = height
+
                 size[0] = set_height
             if not width:
+
                 def set_width(width):
                     size[1] = width
+
                 size[1] = set_width
             try:
                 for (r, c), val in f(*size):
                     src[r, c] = val
-            except TypeError:
-                raise TypeError('A callable src must return an interable '
-                                'which generates a tuple containing '
-                                'coordinate and value')
+            except TypeError as e:
+                raise TypeError(
+                    "A callable src must return an interable "
+                    "which generates a tuple containing "
+                    "coordinate and value"
+                ) from e
             height, width = tuple(size)
             if height is None or width is None:
-                raise TypeError('A callable src must call set_height and '
-                                'set_width if the size is non-deterministic')
+                raise TypeError("A callable src must call set_height and set_width if the size is non-deterministic")
         if isinstance(src, list):
             is_number = lambda x: isinstance(x, Number)
             unique_col_sizes = set(map(len, src))
             everything_are_number = filter(is_number, sum(src, []))
             if len(unique_col_sizes) != 1 or not everything_are_number:
-                raise ValueError('src must be a rectangular array of numbers')
+                raise ValueError("src must be a rectangular array of numbers")
             two_dimensional_array = src
         elif isinstance(src, dict):
             if not height or not width:
                 w = h = 0
-                for r, c in iterkeys(src):
+                for r, c in src.keys():
                     if not height:
                         h = max(h, r + 1)
                     if not width:
@@ -142,8 +143,8 @@ class Matrix(list):
                 for c in range(width):
                     row.append(src.get((r, c), 0))
         else:
-            raise TypeError('src must be a list or dict or callable')
-        super(Matrix, self).__init__(two_dimensional_array)
+            raise TypeError("src must be a list or dict or callable")
+        super().__init__(two_dimensional_array)
 
     @property
     def height(self):
@@ -163,10 +164,10 @@ class Matrix(list):
 
     def minor(self, row_n, col_n):
         height, width = self.height, self.width
-        if not (0 <= row_n < height):
-            raise ValueError('row_n should be between 0 and %d' % height)
-        elif not (0 <= col_n < width):
-            raise ValueError('col_n should be between 0 and %d' % width)
+        if not 0 <= row_n < height:
+            raise ValueError(f"row_n should be between 0 and {height}")
+        if not 0 <= col_n < width:
+            raise ValueError(f"col_n should be between 0 and {width}")
         two_dimensional_array = []
         for r in range(height):
             if r == row_n:
@@ -182,18 +183,18 @@ class Matrix(list):
     def determinant(self):
         height, width = self.height, self.width
         if height != width:
-            raise ValueError('Only square matrix can calculate a determinant')
-        tmp, rv = copy.deepcopy(self), 1.
+            raise ValueError("Only square matrix can calculate a determinant")
+        tmp, rv = copy.deepcopy(self), 1.0
         for c in range(width - 1, 0, -1):
             pivot, r = max((abs(tmp[r][c]), r) for r in range(c + 1))
             pivot = tmp[r][c]
             if not pivot:
-                return 0.
+                return 0.0
             tmp[r], tmp[c] = tmp[c], tmp[r]
             if r != c:
                 rv = -rv
             rv *= pivot
-            fact = -1. / pivot
+            fact = -1.0 / pivot
             for r in range(c):
                 f = fact * tmp[r][c]
                 for x in range(c):
@@ -203,7 +204,7 @@ class Matrix(list):
     def adjugate(self):
         height, width = self.height, self.width
         if height != width:
-            raise ValueError('Only square matrix can be adjugated')
+            raise ValueError("Only square matrix can be adjugated")
         if height == 2:
             a, b = self[0][0], self[0][1]
             c, d = self[1][0], self[1][1]
@@ -217,13 +218,13 @@ class Matrix(list):
 
     def inverse(self):
         if self.height == self.width == 1:
-            return type(self)([[1. / self[0][0]]])
-        return (1. / self.determinant()) * self.adjugate()
+            return type(self)([[1.0 / self[0][0]]])
+        return (1.0 / self.determinant()) * self.adjugate()
 
     def __add__(self, other):
         height, width = self.height, self.width
         if (height, width) != (other.height, other.width):
-            raise ValueError('Must be same size')
+            raise ValueError("Must be same size")
         src = {}
         for r in range(height):
             for c in range(width):
@@ -232,18 +233,17 @@ class Matrix(list):
 
     def __mul__(self, other):
         if self.width != other.height:
-            raise ValueError('Bad size')
+            raise ValueError("Bad size")
         height, width = self.height, other.width
         src = {}
         for r in range(height):
             for c in range(width):
-                src[r, c] = sum(self[r][x] * other[x][c]
-                                for x in range(self.width))
+                src[r, c] = sum(self[r][x] * other[x][c] for x in range(self.width))
         return type(self)(src, height, width)
 
     def __rmul__(self, other):
         if not isinstance(other, Number):
-            raise TypeError('The operand should be a number')
+            raise TypeError("The operand should be a number")
         height, width = self.height, self.width
         src = {}
         for r in range(height):
@@ -252,9 +252,10 @@ class Matrix(list):
         return type(self)(src, height, width)
 
     def __repr__(self):
-        return '{}({})'.format(type(self).__name__, super(Matrix, self).__repr__())
+        return f"{type(self).__name__}({super().__repr__()})"
 
     def _repr_latex_(self):
-        rows = [' && '.join(['%.3f' % cell for cell in row]) for row in self]
-        latex = r'\begin{matrix} %s \end{matrix}' % r'\\'.join(rows)
-        return '$%s$' % latex
+        rows = [" && ".join([f"{cell:.3f}" for cell in row]) for row in self]
+        s = r"\\".join(rows)
+        latex = rf"\begin{{matrix}} {s} \end{{matrix}}"
+        return f"${latex}$"

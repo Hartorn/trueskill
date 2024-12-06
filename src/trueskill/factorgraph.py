@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
    trueskill.factorgraph
    ~~~~~~~~~~~~~~~~~~~~~
@@ -9,20 +8,15 @@
    :license: BSD, see LICENSE for more details.
 
 """
-from __future__ import absolute_import
 
 import math
 
-from six.moves import zip
-
 from .mathematics import Gaussian, inf
 
-
-__all__ = ['Variable', 'PriorFactor', 'LikelihoodFactor', 'SumFactor',
-           'TruncateFactor']
+__all__ = ["Variable", "PriorFactor", "LikelihoodFactor", "SumFactor", "TruncateFactor"]
 
 
-class Node(object):
+class Node:
 
     pass
 
@@ -31,7 +25,7 @@ class Variable(Node, Gaussian):
 
     def __init__(self):
         self.messages = {}
-        super(Variable, self).__init__()
+        super().__init__()
 
     def set(self, val):
         delta = self.delta(val)
@@ -41,7 +35,7 @@ class Variable(Node, Gaussian):
     def delta(self, other):
         pi_delta = abs(self.pi - other.pi)
         if pi_delta == inf:
-            return 0.
+            return 0.0
         return max(abs(self.tau - other.tau), math.sqrt(pi_delta))
 
     def update_message(self, factor, pi=0, tau=0, message=None):
@@ -62,9 +56,7 @@ class Variable(Node, Gaussian):
         self.messages[factor] = message
 
     def __repr__(self):
-        args = (type(self).__name__, super(Variable, self).__repr__(),
-                len(self.messages), '' if len(self.messages) == 1 else 's')
-        return '<%s %s with %d connection%s>' % args
+        return f"<{type(self).__name__} {super().__repr__()} with {len(self.messages)} connection{'' if len(self.messages) == 1 else 's'}>"
 
 
 class Factor(Node):
@@ -86,20 +78,18 @@ class Factor(Node):
         return self.vars[0]
 
     def __repr__(self):
-        args = (type(self).__name__, len(self.vars),
-                '' if len(self.vars) == 1 else 's')
-        return '<%s with %d connection%s>' % args
+        return f"<{type(self).__name__} with {len(self.vars)} connection{'' if len(self.vars) == 1 else 's'}>"
 
 
 class PriorFactor(Factor):
 
     def __init__(self, var, val, dynamic=0):
-        super(PriorFactor, self).__init__([var])
+        super().__init__([var])
         self.val = val
         self.dynamic = dynamic
 
     def down(self):
-        sigma = math.sqrt(self.val.sigma ** 2 + self.dynamic ** 2)
+        sigma = math.sqrt(self.val.sigma**2 + self.dynamic**2)
         value = Gaussian(self.val.mu, sigma)
         return self.var.update_value(self, value=value)
 
@@ -107,13 +97,13 @@ class PriorFactor(Factor):
 class LikelihoodFactor(Factor):
 
     def __init__(self, mean_var, value_var, variance):
-        super(LikelihoodFactor, self).__init__([mean_var, value_var])
+        super().__init__([mean_var, value_var])
         self.mean = mean_var
         self.value = value_var
         self.variance = variance
 
     def calc_a(self, var):
-        return 1. / (1. + self.variance * var.pi)
+        return 1.0 / (1.0 + self.variance * var.pi)
 
     def down(self):
         # update value.
@@ -131,7 +121,7 @@ class LikelihoodFactor(Factor):
 class SumFactor(Factor):
 
     def __init__(self, sum_var, term_vars, coeffs):
-        super(SumFactor, self).__init__([sum_var] + term_vars)
+        super().__init__([sum_var] + term_vars)
         self.sum = sum_var
         self.terms = term_vars
         self.coeffs = coeffs
@@ -147,11 +137,11 @@ class SumFactor(Factor):
         for x, c in enumerate(self.coeffs):
             try:
                 if x == index:
-                    coeffs.append(1. / coeff)
+                    coeffs.append(1.0 / coeff)
                 else:
                     coeffs.append(-c / coeff)
             except ZeroDivisionError:
-                coeffs.append(0.)
+                coeffs.append(0.0)
         vals = self.terms[:]
         vals[index] = self.sum
         msgs = [var[self] for var in vals]
@@ -170,10 +160,10 @@ class SumFactor(Factor):
                 # For example, it can just warn RuntimeWarning on n/0 problem
                 # instead of throwing ZeroDivisionError.  So div.pi, the
                 # denominator has to be a built-in float.
-                pi_inv += coeff ** 2 / float(div.pi)
+                pi_inv += coeff**2 / float(div.pi)
             except ZeroDivisionError:
                 pi_inv = inf
-        pi = 1. / pi_inv
+        pi = 1.0 / pi_inv
         tau = pi * mu
         return var.update_message(self, pi, tau)
 
@@ -181,7 +171,7 @@ class SumFactor(Factor):
 class TruncateFactor(Factor):
 
     def __init__(self, var, v_func, w_func, draw_margin):
-        super(TruncateFactor, self).__init__([var])
+        super().__init__([var])
         self.v_func = v_func
         self.w_func = w_func
         self.draw_margin = draw_margin
@@ -194,6 +184,6 @@ class TruncateFactor(Factor):
         args = (div.tau / sqrt_pi, self.draw_margin * sqrt_pi)
         v = self.v_func(*args)
         w = self.w_func(*args)
-        denom = (1. - w)
+        denom = 1.0 - w
         pi, tau = div.pi / denom, (div.tau + sqrt_pi * v) / denom
         return val.update_value(self, pi, tau)
