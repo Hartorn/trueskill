@@ -26,7 +26,7 @@ def pytest_generate_tests(metafunc):
 def various_backends(backends=None):
     import inspect
 
-    from trueskillhelpers import substituted_trueskill
+    from tests.helpers import substituted_trueskill
 
     if hasattr(backends, "__call__"):
         return various_backends(True)(backends)

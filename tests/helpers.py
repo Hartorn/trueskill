@@ -1,10 +1,7 @@
-import functools
-import inspect
 import logging
 from contextlib import contextmanager
 
 import trueskill
-from trueskill.backends import available_backends
 from trueskill.factorgraph import (
     Factor,
     LikelihoodFactor,
@@ -19,6 +16,7 @@ __all__ = [
     "calc_dynamic_draw_probability",
     "factor_graph_logging",
 ]
+import inspect
 
 
 @contextmanager
@@ -53,7 +51,6 @@ def substituted_trueskill(*args, **kwargs):
 
 
 def calc_dynamic_draw_probability(rating_group1, rating_group2, env=None):
-    from trueskill.factorgraph import Variable
 
     if env is None:
         env = trueskill.global_env()
@@ -81,7 +78,6 @@ def factor_graph_logging(color=False):
            logger.addHandler(StreamHandler(sys.stderr))
            rate_1vs1(Rating(), Rating())
     """
-    import inspect
 
     # color mode uses the termcolor module
     if color:
@@ -109,10 +105,9 @@ def factor_graph_logging(color=False):
     def r(val):
         if isinstance(val, Factor):
             return repr_factor(val)
-        elif isinstance(val, Gaussian):
+        if isinstance(val, Gaussian):
             return repr_gauss(val)
-        else:
-            return repr(val)
+        return repr(val)
 
     def factor_init(self, *args, **kwargs):
         frames = inspect.getouterframes(inspect.currentframe())

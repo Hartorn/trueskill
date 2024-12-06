@@ -1,9 +1,8 @@
 import warnings
 
 from almost import Approximate
-from pytest import deprecated_call, raises
+from pytest import raises
 
-import trueskill as t
 from conftest import various_backends
 from trueskill import Rating, TrueSkill, quality, quality_1vs1, rate, rate_1vs1, setup
 
@@ -19,7 +18,7 @@ class almost(Approximate):
     def normalize(self, value):
         if isinstance(value, Rating):
             return self.normalize(tuple(value))
-        elif isinstance(value, list):
+        if isinstance(value, list):
             try:
                 if isinstance(value[0][0], Rating):
                     # flatten transformed ratings
@@ -182,7 +181,7 @@ def generate_teams(sizes, env=None):
     rating_groups = []
     for size in sizes:
         ratings = []
-        for x in range(size):
+        for _ in range(size):
             ratings.append(rating_cls())
         rating_groups.append(tuple(ratings))
     return rating_groups
@@ -498,7 +497,7 @@ def test_microsoft_research_example():
 
 @various_backends
 def test_dynamic_draw_probability():
-    from trueskillhelpers import calc_dynamic_draw_probability as calc
+    from tests.helpers import calc_dynamic_draw_probability as calc
 
     def assert_predictable_draw_probability(r1, r2, drawn=False):
         dyn = TrueSkill(draw_probability=quality_1vs1)

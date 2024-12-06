@@ -15,7 +15,7 @@ check_format: ## Format all files inside backend with black & isort
 .PHONY: check_format
 
 check_linting: ## Format all files inside backend with black & isort
-	poetry run pylint ./src/trueskill
+	poetry run pylint ./src ./tests
 .PHONY: check_linting
 
 setup: ## Install the deps
