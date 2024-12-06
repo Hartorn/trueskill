@@ -43,6 +43,7 @@ disable = [
     "too-many-arguments",
     "too-many-positional-arguments",
     "too-many-instance-attributes",
-    "too-many-locals"
+    "too-many-locals",
+    "too-few-public-methods",
 ]
 enable = ["useless-suppression", "use-symbolic-message-instead"]

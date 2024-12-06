@@ -118,7 +118,6 @@ def test_invalid_rating_groups():
         env.validate_rating_groups([(Rating(),), {0: Rating()}])
 
 
-
 def test_rating_tuples():
     r1, r2, r3 = Rating(), Rating(), Rating()
     rated = rate([(r1, r2), (r3,)])

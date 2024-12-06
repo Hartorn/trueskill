@@ -13,7 +13,6 @@ from __future__ import absolute_import
 
 import math
 
-
 from .mathematics import Gaussian, inf
 
 __all__ = ["Variable", "PriorFactor", "LikelihoodFactor", "SumFactor", "TruncateFactor"]
@@ -59,13 +58,7 @@ class Variable(Node, Gaussian):
         self.messages[factor] = message
 
     def __repr__(self):
-        args = (
-            type(self).__name__,
-            super().__repr__(),
-            len(self.messages),
-            "" if len(self.messages) == 1 else "s",
-        )
-        return "<%s %s with %d connection%s>" % args
+        return f"<{type(self).__name__} {super().__repr__()} with {len(self.messages)} connection{'' if len(self.messages) == 1 else 's'}>"
 
 
 class Factor(Node):
@@ -87,8 +80,7 @@ class Factor(Node):
         return self.vars[0]
 
     def __repr__(self):
-        args = (type(self).__name__, len(self.vars), "" if len(self.vars) == 1 else "s")
-        return "<%s with %d connection%s>" % args
+        return f"<{type(self).__name__} with {len(self.vars)} connection{'' if len(self.vars) == 1 else 's'}>"
 
 
 class PriorFactor(Factor):

@@ -38,7 +38,7 @@ class Gaussian:
         if mu is not None:
             if sigma is None:
                 raise TypeError("sigma argument is needed")
-            elif sigma == 0:
+            if sigma == 0:
                 raise ValueError("sigma**2 should be greater than 0")
             pi = sigma**-2
             tau = pi * mu
@@ -81,11 +81,11 @@ class Gaussian:
         return self.mu >= other.mu
 
     def __repr__(self):
-        return "N(mu={:.3f}, sigma={:.3f})".format(self.mu, self.sigma)
+        return f"N(mu={self.mu:.3f}, sigma={self.sigma:.3f})"
 
     def _repr_latex_(self):
-        latex = r"\mathcal{{ N }}( {:.3f}, {:.3f}^2 )".format(self.mu, self.sigma)
-        return "$%s$" % latex
+        latex = rf"$\mathcal{{ N }}( {self.mu:.3f}, {self.sigma:.3f}^2 )"
+        return f"${latex}$"
 
 
 class Matrix(list):
@@ -110,7 +110,7 @@ class Matrix(list):
             try:
                 for (r, c), val in f(*size):
                     src[r, c] = val
-            except TypeError as e :
+            except TypeError as e:
                 raise TypeError(
                     "A callable src must return an interable "
                     "which generates a tuple containing "
@@ -118,7 +118,7 @@ class Matrix(list):
                 ) from e
             height, width = tuple(size)
             if height is None or width is None:
-                raise TypeError("A callable src must call set_height and " "set_width if the size is non-deterministic")
+                raise TypeError("A callable src must call set_height and set_width if the size is non-deterministic")
         if isinstance(src, list):
             is_number = lambda x: isinstance(x, Number)
             unique_col_sizes = set(map(len, src))
@@ -166,10 +166,10 @@ class Matrix(list):
 
     def minor(self, row_n, col_n):
         height, width = self.height, self.width
-        if not (0 <= row_n < height):
-            raise ValueError("row_n should be between 0 and %d" % height)
-        elif not (0 <= col_n < width):
-            raise ValueError("col_n should be between 0 and %d" % width)
+        if not 0 <= row_n < height:
+            raise ValueError(f"row_n should be between 0 and {height}")
+        if not 0 <= col_n < width:
+            raise ValueError(f"col_n should be between 0 and {width}")
         two_dimensional_array = []
         for r in range(height):
             if r == row_n:
@@ -254,9 +254,10 @@ class Matrix(list):
         return type(self)(src, height, width)
 
     def __repr__(self):
-        return "{}({})".format(type(self).__name__, super().__repr__())
+        return f"{type(self).__name__}({super().__repr__()})"
 
     def _repr_latex_(self):
-        rows = [" && ".join(["%.3f" % cell for cell in row]) for row in self]
-        latex = r"\begin{matrix} %s \end{matrix}" % r"\\".join(rows)
-        return "$%s$" % latex
+        rows = [" && ".join([f"{cell:.3f}" for cell in row]) for row in self]
+        s = r"\\".join(rows)
+        latex = rf"\begin{{matrix}} {s} \end{{matrix}}"
+        return f"${latex}$"

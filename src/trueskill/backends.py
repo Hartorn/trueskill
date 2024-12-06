@@ -13,7 +13,6 @@ from __future__ import absolute_import
 
 import math
 
-
 __all__ = ["available_backends", "choose_backend", "cdf", "pdf", "ppf"]
 
 
@@ -26,14 +25,14 @@ def _gen_erfcinv(erfc, math=math):
         """The inverse function of erfc."""
         if y >= 2:
             return -100.0
-        elif y <= 0:
+        if y <= 0:
             return 100.0
         zero_point = y < 1
         if not zero_point:
             y = 2 - y
         t = math.sqrt(-2 * math.log(y / 2.0))
         x = -0.70711 * ((2.30753 + t * 0.27061) / (1.0 + t * (0.99229 + t * 0.04481)) - t)
-        for i in range(2):
+        for _ in range(2):
             err = erfc(x) - y
             x += err / (1.12837916709551257 * math.exp(-(x**2)) - x * err)
         return x if zero_point else -x
@@ -110,19 +109,19 @@ def choose_backend(backend):
     """
     if backend is None:  # fallback
         return cdf, pdf, ppf
-    elif backend == "mpmath":
+    if backend == "mpmath":
         try:
             import mpmath
-        except ImportError:
-            raise ImportError('Install "mpmath" to use this backend')
+        except ImportError as e:
+            raise ImportError('Install "mpmath" to use this backend') from e
         return mpmath.ncdf, mpmath.npdf, _gen_ppf(mpmath.erfc, math=mpmath)
-    elif backend == "scipy":
+    if backend == "scipy":
         try:
             from scipy.stats import norm
-        except ImportError:
-            raise ImportError('Install "scipy" to use this backend')
+        except ImportError as e:
+            raise ImportError('Install "scipy" to use this backend') from e
         return norm.cdf, norm.pdf, norm.ppf
-    raise ValueError("%r backend is not defined" % backend)
+    raise ValueError(f"{backend} backend is not defined")
 
 
 def available_backends():

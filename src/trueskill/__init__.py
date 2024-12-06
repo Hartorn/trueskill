@@ -316,7 +316,7 @@ class TrueSkill:
         return weights
 
     def factor_graph_builders(self, rating_groups, ranks, weights):
-        """Makes nodes for the TrueSkill factor graph.
+        r"""Makes nodes for the TrueSkill factor graph.
 
         Here's an example of a TrueSkill factor graph when 1 vs 2 vs 1 match::
 
@@ -629,13 +629,13 @@ class TrueSkill:
             f = self.draw_probability
             draw_probability = ".".join([f.__module__, f.__name__])
         else:
-            draw_probability = "%.1f%%" % (self.draw_probability * 100)
+            draw_probability = f"{(self.draw_probability * 100):.1f}%"
         if self.backend is None:
             backend = ""
         elif isinstance(self.backend, tuple):
             backend = ", backend=..."
         else:
-            backend = ", backend=%r" % self.backend
+            backend = f", backend={self.backend}"
         args = (
             ".".join([c.__module__, c.__name__]),
             self.mu,
