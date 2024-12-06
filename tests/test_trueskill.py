@@ -118,32 +118,6 @@ def test_invalid_rating_groups():
         env.validate_rating_groups([(Rating(),), {0: Rating()}])
 
 
-def test_deprecated_methods():
-    env = TrueSkill()
-    r1, r2, r3 = Rating(), Rating(), Rating()
-    deprecated_call(t.transform_ratings, [(r1,), (r2,), (r3,)])
-    deprecated_call(t.match_quality, [(r1,), (r2,), (r3,)])
-    deprecated_call(env.Rating)
-    deprecated_call(env.transform_ratings, [(r1,), (r2,), (r3,)])
-    deprecated_call(env.match_quality, [(r1,), (r2,), (r3,)])
-    deprecated_call(env.rate_1vs1, r1, r2)
-    deprecated_call(env.quality_1vs1, r1, r2)
-    deprecated_call(lambda: Rating().exposure)
-    dyn = TrueSkill(draw_probability=t.dynamic_draw_probability)
-    deprecated_call(dyn.rate, [(r1,), (r2,)])
-
-
-def test_deprecated_individual_rating_groups():
-    r1, r2, r3 = Rating(50, 1), Rating(10, 5), Rating(15, 5)
-    with raises(TypeError):
-        deprecated_call(rate, [r1, r2, r3])
-    with raises(TypeError):
-        deprecated_call(quality, [r1, r2, r3])
-    assert t.transform_ratings([r1, r2, r3]) == rate([(r1,), (r2,), (r3,)])
-    assert t.match_quality([r1, r2, r3]) == quality([(r1,), (r2,), (r3,)])
-    deprecated_call(t.transform_ratings, [r1, r2, r3])
-    deprecated_call(t.match_quality, [r1, r2, r3])
-
 
 def test_rating_tuples():
     r1, r2, r3 = Rating(), Rating(), Rating()
@@ -198,7 +172,7 @@ def test_list_instead_of_tuple():
 def test_backend():
     env = TrueSkill(backend=(NotImplemented, NotImplemented, NotImplemented))
     with raises(TypeError):
-        env.rate_1vs1(Rating(), Rating())
+        rate_1vs1(Rating(), Rating(), env=env)
     with raises(ValueError):
         # '__not_defined__' backend is not defined
         TrueSkill(backend="__not_defined__")
@@ -531,9 +505,9 @@ def test_dynamic_draw_probability():
     from trueskillhelpers import calc_dynamic_draw_probability as calc
 
     def assert_predictable_draw_probability(r1, r2, drawn=False):
-        dyn = TrueSkill(draw_probability=t.dynamic_draw_probability)
+        dyn = TrueSkill(draw_probability=quality_1vs1)
         sta = TrueSkill(draw_probability=calc((r1,), (r2,), dyn))
-        assert dyn.rate_1vs1(r1, r2, drawn) == sta.rate_1vs1(r1, r2, drawn)
+        assert rate_1vs1(r1, r2, drawn, env=dyn) == rate_1vs1(r1, r2, env=sta)
 
     assert_predictable_draw_probability(Rating(100), Rating(10))
     assert_predictable_draw_probability(Rating(10), Rating(100))

@@ -21,3 +21,11 @@ check_linting: ## Format all files inside backend with black & isort
 setup: ## Install the deps
 	poetry install --sync
 .PHONY: setup
+
+clean: ## Remove all caches
+	rm -rf __pycache__ **/__pycache__ .pytest_cache
+.PHONY: clean
+
+test: clean ## Run the tests
+	poetry run pytest -p no:cacheprovider -v
+.PHONY: test

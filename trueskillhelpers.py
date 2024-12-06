@@ -59,7 +59,7 @@ def calc_dynamic_draw_probability(rating_group1, rating_group2, env=None):
     from trueskill.factorgraph import Variable
 
     if env is None:
-        env = global_env()
+        env = trueskill.global_env()
     team_perf_vars = []
     for rating_group in [rating_group1, rating_group2]:
         team_perf_var = Variable()

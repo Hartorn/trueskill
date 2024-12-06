@@ -45,10 +45,6 @@ __all__ = [
     # draw probability helpers
     "calc_draw_probability",
     "calc_draw_margin",
-    # deprecated features
-    "transform_ratings",
-    "match_quality",
-    "dynamic_draw_probability",
 ]
 
 
@@ -762,14 +758,3 @@ def expose(rating):
 
     """
     return global_env().expose(rating)
-
-
-# Append deprecated methods into :class:`TrueSkill` and :class:`Rating`
-from . import deprecated  # noqa
-from .deprecated import (  # noqa
-    dynamic_draw_probability,
-    match_quality,
-    transform_ratings,
-)
-
-deprecated.ensure_backward_compatibility(TrueSkill, Rating)
