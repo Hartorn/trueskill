@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "trueskill"
+version = "0.4.5"
+description = "The video game rating system"
+authors = ["Hartorn <hartorn.github@gmail.com>", "Heungsub Lee <sub@subl.ee>"]
+readme = "README.md"
+packages = [{include = "trueskill", from = "src"}]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
