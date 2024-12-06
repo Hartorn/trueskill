@@ -14,10 +14,6 @@ from __future__ import absolute_import
 import math
 from itertools import chain
 
-from six import iteritems
-from six.moves import map, range, zip
-
-from .__about__ import __version__  # noqa
 from .backends import choose_backend
 from .factorgraph import (
     LikelihoodFactor,
@@ -136,13 +132,10 @@ class Rating(Gaussian):
             mu = global_env().mu
         if sigma is None:
             sigma = global_env().sigma
-        super(Rating, self).__init__(mu, sigma)
+        super().__init__(mu, sigma)
 
     def __int__(self):
         return int(self.mu)
-
-    def __long__(self):
-        return long(self.mu)
 
     def __float__(self):
         return float(self.mu)
@@ -152,11 +145,10 @@ class Rating(Gaussian):
 
     def __repr__(self):
         c = type(self)
-        args = (".".join([c.__module__, c.__name__]), self.mu, self.sigma)
-        return "%s(mu=%.3f, sigma=%.3f)" % args
+        return f"{'.'.join([c.__module__, c.__name__])}(mu={self.mu:.3f}, sigma={self.sigma:.3f})"
 
 
-class TrueSkill(object):
+class TrueSkill:
     """Implements a TrueSkill environment.  An environment could have
     customized constants.  Not all games have the same design and may need to
     customize TrueSkill constants.
@@ -288,13 +280,13 @@ class TrueSkill(object):
         # check group sizes
         if len(rating_groups) < 2:
             raise ValueError("Need multiple rating groups")
-        elif not all(rating_groups):
+        if not all(rating_groups):
             raise ValueError("Each group must contain multiple ratings")
         # check group types
         group_types = set(map(type, rating_groups))
         if len(group_types) != 1:
             raise TypeError("All groups should be same type")
-        elif group_types.pop() is Rating:
+        if group_types.pop() is Rating:
             raise TypeError("Rating cannot be a rating group")
         # normalize rating_groups
         if isinstance(rating_groups[0], dict):
@@ -303,7 +295,7 @@ class TrueSkill(object):
             keys = []
             for dict_rating_group in dict_rating_groups:
                 rating_group, key_group = [], []
-                for key, rating in iteritems(dict_rating_group):
+                for key, rating in dict_rating_group.items():
                     rating_group.append(rating)
                     key_group.append(key)
                 rating_groups.append(tuple(rating_group))
@@ -321,7 +313,7 @@ class TrueSkill(object):
             for x, group in enumerate(rating_groups):
                 w = []
                 weights.append(w)
-                for y, rating in enumerate(group):
+                for y, _ in enumerate(group):
                     if keys is not None:
                         y = keys[x][y]
                     w.append(weights_dict.get((x, y), 1))
@@ -433,7 +425,7 @@ class TrueSkill(object):
 
         # gray arrows
         layers_built = build([build_rating_layer, build_perf_layer, build_team_perf_layer])
-        rating_layer, perf_layer, team_perf_layer = layers_built
+        _, perf_layer, team_perf_layer = layers_built
         for f in chain(*layers_built):
             f.down()
         # arrow #1, #2, #3

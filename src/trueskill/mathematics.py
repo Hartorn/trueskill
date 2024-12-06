@@ -18,9 +18,7 @@ import math
 try:
     from numbers import Number
 except ImportError:
-    Number = (int, long, float, complex)
-
-from six import iterkeys
+    Number = (int, float, complex)
 
 __all__ = ["Gaussian", "Matrix", "inf"]
 
@@ -28,7 +26,7 @@ __all__ = ["Gaussian", "Matrix", "inf"]
 inf = float("inf")
 
 
-class Gaussian(object):
+class Gaussian:
     """A model for the normal distribution."""
 
     #: Precision, the inverse of the variance.
@@ -112,12 +110,12 @@ class Matrix(list):
             try:
                 for (r, c), val in f(*size):
                     src[r, c] = val
-            except TypeError:
+            except TypeError as e :
                 raise TypeError(
                     "A callable src must return an interable "
                     "which generates a tuple containing "
                     "coordinate and value"
-                )
+                ) from e
             height, width = tuple(size)
             if height is None or width is None:
                 raise TypeError("A callable src must call set_height and " "set_width if the size is non-deterministic")
@@ -131,7 +129,7 @@ class Matrix(list):
         elif isinstance(src, dict):
             if not height or not width:
                 w = h = 0
-                for r, c in iterkeys(src):
+                for r, c in src.keys():
                     if not height:
                         h = max(h, r + 1)
                     if not width:
@@ -148,7 +146,7 @@ class Matrix(list):
                     row.append(src.get((r, c), 0))
         else:
             raise TypeError("src must be a list or dict or callable")
-        super(Matrix, self).__init__(two_dimensional_array)
+        super().__init__(two_dimensional_array)
 
     @property
     def height(self):
@@ -256,7 +254,7 @@ class Matrix(list):
         return type(self)(src, height, width)
 
     def __repr__(self):
-        return "{}({})".format(type(self).__name__, super(Matrix, self).__repr__())
+        return "{}({})".format(type(self).__name__, super().__repr__())
 
     def _repr_latex_(self):
         rows = [" && ".join(["%.3f" % cell for cell in row]) for row in self]

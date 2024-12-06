@@ -29,7 +29,7 @@ class almost(Approximate):
                     return list(sum(value, ()))
             except (TypeError, IndexError):
                 pass
-        return super(almost, self).normalize(value)
+        return super().normalize(value)
 
     @classmethod
     def wrap(cls, f, *args, **kwargs):
@@ -157,7 +157,7 @@ def test_rating_tuples():
 
 
 def test_rating_dicts():
-    class Player(object):
+    class Player:
         def __init__(self, name, rating, team):
             self.name = name
             self.rating = rating
@@ -786,7 +786,7 @@ def test_issue9_weights_dict_with_object_keys():
     .. _issue #9: https://github.com/sublee/trueskill/issues/9
     """
 
-    class Player(object):
+    class Player:
         def __init__(self, rating, team):
             self.rating = rating
             self.team = team
