@@ -10,6 +10,27 @@ packages = [{include = "trueskill", from = "src"}]
 python = ">=3.9,<4"
 
 
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
+pylint = "^3.3.2"
+black = "^24.10.0"
+isort = "^5.13.2"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pylint.reports]
+reports = "y"
+output-format = "colorized"
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+extend_skip_glob = [".history/*"]
+
+[tool.pylint.'MESSAGES CONTROL']
+# disable = "missing-function-docstring,missing-class-docstring,missing-module-docstring,line-too-long"
+enable = ["useless-suppression", "use-symbolic-message-instead"]

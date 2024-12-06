@@ -6,17 +6,15 @@ import warnings
 from almost import Approximate
 from pytest import deprecated_call, raises
 
-from conftest import various_backends
 import trueskill as t
-from trueskill import (
-    quality, quality_1vs1, rate, rate_1vs1, Rating, setup, TrueSkill)
+from conftest import various_backends
+from trueskill import Rating, TrueSkill, quality, quality_1vs1, rate, rate_1vs1, setup
+
+warnings.simplefilter("always")
 
 
-warnings.simplefilter('always')
-
-
-inf = float('inf')
-nan = float('nan')
+inf = float("inf")
+nan = float("nan")
 
 
 class almost(Approximate):
@@ -82,12 +80,11 @@ def test_rating_to_number():
 def test_unsorted_groups():
     t1, t2, t3 = generate_teams([1, 1, 1])
     rated = rate([t1, t2, t3], [2, 1, 0])
-    assert almost(rated) == \
-        [(18.325, 6.656), (25.000, 6.208), (31.675, 6.656)]
+    assert almost(rated) == [(18.325, 6.656), (25.000, 6.208), (31.675, 6.656)]
 
 
 def test_custom_environment():
-    env = TrueSkill(draw_probability=.50)
+    env = TrueSkill(draw_probability=0.50)
     t1, t2 = generate_teams([1, 1], env=env)
     rated = env.rate([t1, t2])
     assert almost(rated) == [(30.267, 7.077), (19.733, 7.077)]
@@ -95,7 +92,7 @@ def test_custom_environment():
 
 def test_setup_global_environment():
     try:
-        setup(draw_probability=.50)
+        setup(draw_probability=0.50)
         t1, t2 = generate_teams([1, 1])
         rated = rate([t1, t2])
         assert almost(rated) == [(30.267, 7.077), (19.733, 7.077)]
@@ -165,9 +162,10 @@ def test_rating_dicts():
             self.name = name
             self.rating = rating
             self.team = team
-    p1 = Player('Player A', Rating(), 0)
-    p2 = Player('Player B', Rating(), 0)
-    p3 = Player('Player C', Rating(), 1)
+
+    p1 = Player("Player A", Rating(), 0)
+    p2 = Player("Player B", Rating(), 0)
+    p3 = Player("Player C", Rating(), 1)
     rated = rate([{p1: p1.rating, p2: p2.rating}, {p3: p3.rating}])
     assert len(rated) == 2
     assert isinstance(rated[0], dict)
@@ -203,7 +201,7 @@ def test_backend():
         env.rate_1vs1(Rating(), Rating())
     with raises(ValueError):
         # '__not_defined__' backend is not defined
-        TrueSkill(backend='__not_defined__')
+        TrueSkill(backend="__not_defined__")
 
 
 # algorithm
@@ -234,41 +232,73 @@ def test_n_vs_n():
     # 2 vs 2
     t1, t2 = generate_teams([2, 2])
     assert _quality([t1, t2]) == 0.447
-    assert _rate([t1, t2]) == \
-        [(28.108, 7.774), (28.108, 7.774), (21.892, 7.774), (21.892, 7.774)]
-    assert _rate([t1, t2], [0, 0]) == \
-        [(25.000, 7.455), (25.000, 7.455), (25.000, 7.455), (25.000, 7.455)]
+    assert _rate([t1, t2]) == [
+        (28.108, 7.774),
+        (28.108, 7.774),
+        (21.892, 7.774),
+        (21.892, 7.774),
+    ]
+    assert _rate([t1, t2], [0, 0]) == [
+        (25.000, 7.455),
+        (25.000, 7.455),
+        (25.000, 7.455),
+        (25.000, 7.455),
+    ]
     # 4 vs 4
     t1, t2 = generate_teams([4, 4])
     assert _quality([t1, t2]) == 0.447
-    assert _rate([t1, t2]) == \
-        [(27.198, 8.059), (27.198, 8.059), (27.198, 8.059), (27.198, 8.059),
-         (22.802, 8.059), (22.802, 8.059), (22.802, 8.059), (22.802, 8.059)]
+    assert _rate([t1, t2]) == [
+        (27.198, 8.059),
+        (27.198, 8.059),
+        (27.198, 8.059),
+        (27.198, 8.059),
+        (22.802, 8.059),
+        (22.802, 8.059),
+        (22.802, 8.059),
+        (22.802, 8.059),
+    ]
 
 
 @various_backends
 def test_1_vs_n():
-    t1, = generate_teams([1])
+    (t1,) = generate_teams([1])
     # 1 vs 2
-    t2, = generate_teams([2])
+    (t2,) = generate_teams([2])
     assert _quality([t1, t2]) == 0.135
-    assert _rate([t1, t2]) == \
-        [(33.730, 7.317), (16.270, 7.317), (16.270, 7.317)]
-    assert _rate([t1, t2], [0, 0]) == \
-        [(31.660, 7.138), (18.340, 7.138), (18.340, 7.138)]
+    assert _rate([t1, t2]) == [(33.730, 7.317), (16.270, 7.317), (16.270, 7.317)]
+    assert _rate([t1, t2], [0, 0]) == [
+        (31.660, 7.138),
+        (18.340, 7.138),
+        (18.340, 7.138),
+    ]
     # 1 vs 3
-    t2, = generate_teams([3])
+    (t2,) = generate_teams([3])
     assert _quality([t1, t2]) == 0.012
-    assert _rate([t1, t2]) == \
-        [(36.337, 7.527), (13.663, 7.527), (13.663, 7.527), (13.663, 7.527)]
-    assert almost(rate([t1, t2], [0, 0]), 2) == \
-        [(34.990, 7.455), (15.010, 7.455), (15.010, 7.455), (15.010, 7.455)]
+    assert _rate([t1, t2]) == [
+        (36.337, 7.527),
+        (13.663, 7.527),
+        (13.663, 7.527),
+        (13.663, 7.527),
+    ]
+    assert almost(rate([t1, t2], [0, 0]), 2) == [
+        (34.990, 7.455),
+        (15.010, 7.455),
+        (15.010, 7.455),
+        (15.010, 7.455),
+    ]
     # 1 vs 7
-    t2, = generate_teams([7])
+    (t2,) = generate_teams([7])
     assert _quality([t1, t2]) == 0
-    assert _rate([t1, t2]) == \
-        [(40.582, 7.917), (9.418, 7.917), (9.418, 7.917), (9.418, 7.917),
-         (9.418, 7.917), (9.418, 7.917), (9.418, 7.917), (9.418, 7.917)]
+    assert _rate([t1, t2]) == [
+        (40.582, 7.917),
+        (9.418, 7.917),
+        (9.418, 7.917),
+        (9.418, 7.917),
+        (9.418, 7.917),
+        (9.418, 7.917),
+        (9.418, 7.917),
+        (9.418, 7.917),
+    ]
 
 
 @various_backends
@@ -276,34 +306,64 @@ def test_individual():
     # 3 players
     players = generate_individual(3)
     assert _quality(players) == 0.200
-    assert _rate(players) == \
-        [(31.675, 6.656), (25.000, 6.208), (18.325, 6.656)]
-    assert _rate(players, [0] * 3) == \
-        [(25.000, 5.698), (25.000, 5.695), (25.000, 5.698)]
+    assert _rate(players) == [(31.675, 6.656), (25.000, 6.208), (18.325, 6.656)]
+    assert _rate(players, [0] * 3) == [
+        (25.000, 5.698),
+        (25.000, 5.695),
+        (25.000, 5.698),
+    ]
     # 4 players
     players = generate_individual(4)
     assert _quality(players) == 0.089
-    assert _rate(players) == \
-        [(33.207, 6.348), (27.401, 5.787), (22.599, 5.787), (16.793, 6.348)]
+    assert _rate(players) == [
+        (33.207, 6.348),
+        (27.401, 5.787),
+        (22.599, 5.787),
+        (16.793, 6.348),
+    ]
     # 5 players
     players = generate_individual(5)
     assert _quality(players) == 0.040
-    assert _rate(players) == \
-        [(34.363, 6.136), (29.058, 5.536), (25.000, 5.420), (20.942, 5.536),
-         (15.637, 6.136)]
+    assert _rate(players) == [
+        (34.363, 6.136),
+        (29.058, 5.536),
+        (25.000, 5.420),
+        (20.942, 5.536),
+        (15.637, 6.136),
+    ]
     # 8 players
     players = generate_individual(8)
     assert _quality(players) == 0.004
-    assert _rate(players, [0] * 8) == \
-        [(25.000, 4.592), (25.000, 4.583), (25.000, 4.576), (25.000, 4.573),
-         (25.000, 4.573), (25.000, 4.576), (25.000, 4.583), (25.000, 4.592)]
+    assert _rate(players, [0] * 8) == [
+        (25.000, 4.592),
+        (25.000, 4.583),
+        (25.000, 4.576),
+        (25.000, 4.573),
+        (25.000, 4.573),
+        (25.000, 4.576),
+        (25.000, 4.583),
+        (25.000, 4.592),
+    ]
     # 16 players
     players = generate_individual(16)
-    assert _rate(players) == \
-        [(40.539, 5.276), (36.810, 4.711), (34.347, 4.524), (32.336, 4.433),
-         (30.550, 4.380), (28.893, 4.349), (27.310, 4.330), (25.766, 4.322),
-         (24.234, 4.322), (22.690, 4.330), (21.107, 4.349), (19.450, 4.380),
-         (17.664, 4.433), (15.653, 4.524), (13.190, 4.711), (9.461, 5.276)]
+    assert _rate(players) == [
+        (40.539, 5.276),
+        (36.810, 4.711),
+        (34.347, 4.524),
+        (32.336, 4.433),
+        (30.550, 4.380),
+        (28.893, 4.349),
+        (27.310, 4.330),
+        (25.766, 4.322),
+        (24.234, 4.322),
+        (22.690, 4.330),
+        (21.107, 4.349),
+        (19.450, 4.380),
+        (17.664, 4.433),
+        (15.653, 4.524),
+        (13.190, 4.711),
+        (9.461, 5.276),
+    ]
 
 
 @various_backends
@@ -313,9 +373,16 @@ def test_multiple_teams():
     t2 = (Rating(20, 7), Rating(19, 6), Rating(30, 9), Rating(10, 4))
     t3 = (Rating(50, 5), Rating(30, 2))
     assert _quality([t1, t2, t3]) == 0.367
-    assert _rate([t1, t2, t3], [0, 1, 1]) == \
-        [(40.877, 3.840), (45.493, 2.934), (19.609, 6.396), (18.712, 5.625),
-         (29.353, 7.673), (9.872, 3.891), (48.830, 4.590), (29.813, 1.976)]
+    assert _rate([t1, t2, t3], [0, 1, 1]) == [
+        (40.877, 3.840),
+        (45.493, 2.934),
+        (19.609, 6.396),
+        (18.712, 5.625),
+        (29.353, 7.673),
+        (9.872, 3.891),
+        (48.830, 4.590),
+        (29.813, 1.976),
+    ]
     # 1 vs 2 vs 1
     t1 = (Rating(),)
     t2 = (Rating(), Rating())
@@ -333,26 +400,52 @@ def test_upset():
     t1 = (Rating(20, 8), Rating(25, 6))
     t2 = (Rating(35, 7), Rating(40, 5))
     assert _quality([t1, t2]) == 0.084
-    assert _rate([t1, t2]) == \
-        [(29.698, 7.008), (30.455, 5.594), (27.575, 6.346), (36.211, 4.768)]
+    assert _rate([t1, t2]) == [
+        (29.698, 7.008),
+        (30.455, 5.594),
+        (27.575, 6.346),
+        (36.211, 4.768),
+    ]
     # 3 vs 2
     t1 = (Rating(28, 7), Rating(27, 6), Rating(26, 5))
     t2 = (Rating(30, 4), Rating(31, 3))
     assert _quality([t1, t2]) == 0.254
-    assert _rate([t1, t2], [0, 1]) == \
-        [(28.658, 6.770), (27.484, 5.856), (26.336, 4.917), (29.785, 3.958),
-         (30.879, 2.983)]
-    assert _rate([t1, t2], [1, 0]) == \
-        [(21.840, 6.314), (22.474, 5.575), (22.857, 4.757), (32.012, 3.877),
-         (32.132, 2.949)]
+    assert _rate([t1, t2], [0, 1]) == [
+        (28.658, 6.770),
+        (27.484, 5.856),
+        (26.336, 4.917),
+        (29.785, 3.958),
+        (30.879, 2.983),
+    ]
+    assert _rate([t1, t2], [1, 0]) == [
+        (21.840, 6.314),
+        (22.474, 5.575),
+        (22.857, 4.757),
+        (32.012, 3.877),
+        (32.132, 2.949),
+    ]
     # 8 players
-    players = [(Rating(10, 8),), (Rating(15, 7),), (Rating(20, 6),),
-               (Rating(25, 5),), (Rating(30, 4),), (Rating(35, 3),),
-               (Rating(40, 2),), (Rating(45, 1),)]
+    players = [
+        (Rating(10, 8),),
+        (Rating(15, 7),),
+        (Rating(20, 6),),
+        (Rating(25, 5),),
+        (Rating(30, 4),),
+        (Rating(35, 3),),
+        (Rating(40, 2),),
+        (Rating(45, 1),),
+    ]
     assert _quality(players) == 0.000
-    assert _rate(players) == \
-        [(35.135, 4.506), (32.585, 4.037), (31.329, 3.756), (30.984, 3.453),
-         (31.751, 3.064), (34.051, 2.541), (38.263, 1.849), (44.118, 0.983)]
+    assert _rate(players) == [
+        (35.135, 4.506),
+        (32.585, 4.037),
+        (31.329, 3.756),
+        (30.984, 3.453),
+        (31.751, 3.064),
+        (34.051, 2.541),
+        (38.263, 1.849),
+        (44.118, 0.983),
+    ]
 
 
 @various_backends
@@ -360,14 +453,26 @@ def test_partial_play():
     t1, t2 = (Rating(),), (Rating(), Rating())
     # each results from C# Skills:
     assert rate([t1, t2], weights=[(1,), (1, 1)]) == rate([t1, t2])
-    assert _rate([t1, t2], weights=[(1,), (1, 1)]) == \
-        [(33.730, 7.317), (16.270, 7.317), (16.270, 7.317)]
-    assert _rate([t1, t2], weights=[(0.5,), (0.5, 0.5)]) == \
-        [(33.939, 7.312), (16.061, 7.312), (16.061, 7.312)]
-    assert _rate([t1, t2], weights=[(1,), (0, 1)]) == \
-        [(29.440, 7.166), (25.000, 8.333), (20.560, 7.166)]
-    assert _rate([t1, t2], weights=[(1,), (0.5, 1)]) == \
-        [(32.417, 7.056), (21.291, 8.033), (17.583, 7.056)]
+    assert _rate([t1, t2], weights=[(1,), (1, 1)]) == [
+        (33.730, 7.317),
+        (16.270, 7.317),
+        (16.270, 7.317),
+    ]
+    assert _rate([t1, t2], weights=[(0.5,), (0.5, 0.5)]) == [
+        (33.939, 7.312),
+        (16.061, 7.312),
+        (16.061, 7.312),
+    ]
+    assert _rate([t1, t2], weights=[(1,), (0, 1)]) == [
+        (29.440, 7.166),
+        (25.000, 8.333),
+        (20.560, 7.166),
+    ]
+    assert _rate([t1, t2], weights=[(1,), (0.5, 1)]) == [
+        (32.417, 7.056),
+        (21.291, 8.033),
+        (17.583, 7.056),
+    ]
     # match quality of partial play
     t1, t2, t3 = (Rating(),), (Rating(), Rating()), (Rating(),)
     assert _quality([t1, t2, t3], [(1,), (0.25, 0.75), (1,)]) == 0.2
@@ -377,42 +482,59 @@ def test_partial_play():
 @various_backends
 def test_partial_play_with_weights_dict():
     t1, t2 = (Rating(),), (Rating(), Rating())
-    assert rate([t1, t2], weights={(0, 0): 0.5, (1, 0): 0.5, (1, 1): 0.5}) == \
-        rate([t1, t2], weights=[[0.5], [0.5, 0.5]])
-    assert rate([t1, t2], weights={(1, 0): 0}) == \
-        rate([t1, t2], weights=[[1], [0, 1]])
-    assert rate([t1, t2], weights={(1, 0): 0.5}) == \
-        rate([t1, t2], weights=[[1], [0.5, 1]])
+    assert rate([t1, t2], weights={(0, 0): 0.5, (1, 0): 0.5, (1, 1): 0.5}) == rate(
+        [t1, t2], weights=[[0.5], [0.5, 0.5]]
+    )
+    assert rate([t1, t2], weights={(1, 0): 0}) == rate([t1, t2], weights=[[1], [0, 1]])
+    assert rate([t1, t2], weights={(1, 0): 0.5}) == rate([t1, t2], weights=[[1], [0.5, 1]])
 
 
 @various_backends
 def test_microsoft_research_example():
     # http://research.microsoft.com/en-us/projects/trueskill/details.aspx
-    alice, bob, chris, darren, eve, fabien, george, hillary = \
-        Rating(), Rating(), Rating(), Rating(), \
-        Rating(), Rating(), Rating(), Rating()
-    _rated = rate([{'alice': alice}, {'bob': bob}, {'chris': chris},
-                   {'darren': darren}, {'eve': eve}, {'fabien': fabien},
-                   {'george': george}, {'hillary': hillary}])
+    alice, bob, chris, darren, eve, fabien, george, hillary = (
+        Rating(),
+        Rating(),
+        Rating(),
+        Rating(),
+        Rating(),
+        Rating(),
+        Rating(),
+        Rating(),
+    )
+    _rated = rate(
+        [
+            {"alice": alice},
+            {"bob": bob},
+            {"chris": chris},
+            {"darren": darren},
+            {"eve": eve},
+            {"fabien": fabien},
+            {"george": george},
+            {"hillary": hillary},
+        ]
+    )
     rated = {}
     list(map(rated.update, _rated))
-    assert almost(rated['alice']) == (36.771, 5.749)
-    assert almost(rated['bob']) == (32.242, 5.133)
-    assert almost(rated['chris']) == (29.074, 4.943)
-    assert almost(rated['darren']) == (26.322, 4.874)
-    assert almost(rated['eve']) == (23.678, 4.874)
-    assert almost(rated['fabien']) == (20.926, 4.943)
-    assert almost(rated['george']) == (17.758, 5.133)
-    assert almost(rated['hillary']) == (13.229, 5.749)
+    assert almost(rated["alice"]) == (36.771, 5.749)
+    assert almost(rated["bob"]) == (32.242, 5.133)
+    assert almost(rated["chris"]) == (29.074, 4.943)
+    assert almost(rated["darren"]) == (26.322, 4.874)
+    assert almost(rated["eve"]) == (23.678, 4.874)
+    assert almost(rated["fabien"]) == (20.926, 4.943)
+    assert almost(rated["george"]) == (17.758, 5.133)
+    assert almost(rated["hillary"]) == (13.229, 5.749)
 
 
 @various_backends
 def test_dynamic_draw_probability():
     from trueskillhelpers import calc_dynamic_draw_probability as calc
+
     def assert_predictable_draw_probability(r1, r2, drawn=False):
         dyn = TrueSkill(draw_probability=t.dynamic_draw_probability)
         sta = TrueSkill(draw_probability=calc((r1,), (r2,), dyn))
         assert dyn.rate_1vs1(r1, r2, drawn) == sta.rate_1vs1(r1, r2, drawn)
+
     assert_predictable_draw_probability(Rating(100), Rating(10))
     assert_predictable_draw_probability(Rating(10), Rating(100))
     assert_predictable_draw_probability(Rating(10), Rating(100), drawn=True)
@@ -440,6 +562,7 @@ def test_exposure():
 
 def test_valid_gaussian():
     from trueskill.mathematics import Gaussian
+
     with raises(TypeError):  # sigma argument is needed
         Gaussian(0)
     with raises(ValueError):  # sigma**2 should be greater than 0
@@ -448,6 +571,7 @@ def test_valid_gaussian():
 
 def test_valid_matrix():
     from trueskill.mathematics import Matrix
+
     with raises(TypeError):  # src must be a list or dict or callable
         Matrix(None)
     with raises(ValueError):  # src must be a rectangular array of numbers
@@ -462,6 +586,7 @@ def test_valid_matrix():
 
 def test_matrix_from_dict():
     from trueskill.mathematics import Matrix
+
     mat = Matrix({(0, 0): 1, (4, 9): 1})
     assert mat.height == 5
     assert mat.width == 10
@@ -473,9 +598,11 @@ def test_matrix_from_dict():
 
 def test_matrix_from_item_generator():
     from trueskill.mathematics import Matrix
+
     def gen_matrix(height, width):
         yield (0, 0), 1
         yield (height - 1, width - 1), 1
+
     mat = Matrix(gen_matrix, 5, 10)
     assert mat.height == 5
     assert mat.width == 10
@@ -487,10 +614,12 @@ def test_matrix_from_item_generator():
         # A callable src must call set_height and set_width if the size is
         # non-deterministic
         Matrix(gen_matrix)
+
     def gen_and_set_size_matrix(set_height, set_width):
         set_height(5)
         set_width(10)
         return [((0, 0), 1), ((4, 9), 1)]
+
     mat = Matrix(gen_and_set_size_matrix)
     assert mat.height == 5
     assert mat.width == 10
@@ -502,18 +631,16 @@ def test_matrix_from_item_generator():
 
 def test_matrix_operations():
     from trueskill.mathematics import Matrix
-    assert Matrix([[1, 2], [3, 4]]).inverse() == \
-        Matrix([[-2.0, 1.0], [1.5, -0.5]])
+
+    assert Matrix([[1, 2], [3, 4]]).inverse() == Matrix([[-2.0, 1.0], [1.5, -0.5]])
     assert Matrix([[1, 2], [3, 4]]).determinant() == -2
     assert Matrix([[1, 2], [3, 4]]).adjugate() == Matrix([[4, -2], [-3, 1]])
     with raises(ValueError):  # Bad size
         assert Matrix([[1, 2], [3, 4]]) * Matrix([[5, 6]])
-    assert Matrix([[1, 2], [3, 4]]) * Matrix([[5, 6, 7], [8, 9, 10]]) == \
-        Matrix([[21, 24, 27], [47, 54, 61]])
+    assert Matrix([[1, 2], [3, 4]]) * Matrix([[5, 6, 7], [8, 9, 10]]) == Matrix([[21, 24, 27], [47, 54, 61]])
     with raises(ValueError):  # Must be same size
         Matrix([[1, 2], [3, 4]]) + Matrix([[5, 6, 7], [8, 9, 10]])
-    assert Matrix([[1, 2], [3, 4]]) + Matrix([[5, 6], [7, 8]]) == \
-        Matrix([[6, 8], [10, 12]])
+    assert Matrix([[1, 2], [3, 4]]) + Matrix([[5, 6], [7, 8]]) == Matrix([[6, 8], [10, 12]])
 
 
 # reported bugs
@@ -530,22 +657,44 @@ def test_issue3():
     """
     # @konikos's case 1
     t1 = (Rating(42.234, 3.728), Rating(43.290, 3.842))
-    t2 = (Rating(16.667, 0.500), Rating(16.667, 0.500), Rating(16.667, 0.500),
-          Rating(16.667, 0.500), Rating(16.667, 0.500), Rating(16.667, 0.500),
-          Rating(16.667, 0.500), Rating(16.667, 0.500), Rating(16.667, 0.500),
-          Rating(16.667, 0.500), Rating(16.667, 0.500), Rating(16.667, 0.500),
-          Rating(16.667, 0.500), Rating(16.667, 0.500), Rating(16.667, 0.500))
+    t2 = (
+        Rating(16.667, 0.500),
+        Rating(16.667, 0.500),
+        Rating(16.667, 0.500),
+        Rating(16.667, 0.500),
+        Rating(16.667, 0.500),
+        Rating(16.667, 0.500),
+        Rating(16.667, 0.500),
+        Rating(16.667, 0.500),
+        Rating(16.667, 0.500),
+        Rating(16.667, 0.500),
+        Rating(16.667, 0.500),
+        Rating(16.667, 0.500),
+        Rating(16.667, 0.500),
+        Rating(16.667, 0.500),
+        Rating(16.667, 0.500),
+    )
     rate([t1, t2], [6, 5])
     # @konikos's case 2
-    t1 = (Rating(25.000, 0.500), Rating(25.000, 0.500), Rating(25.000, 0.500),
-          Rating(25.000, 0.500), Rating(33.333, 0.500), Rating(33.333, 0.500),
-          Rating(33.333, 0.500), Rating(33.333, 0.500), Rating(41.667, 0.500),
-          Rating(41.667, 0.500), Rating(41.667, 0.500), Rating(41.667, 0.500))
+    t1 = (
+        Rating(25.000, 0.500),
+        Rating(25.000, 0.500),
+        Rating(25.000, 0.500),
+        Rating(25.000, 0.500),
+        Rating(33.333, 0.500),
+        Rating(33.333, 0.500),
+        Rating(33.333, 0.500),
+        Rating(33.333, 0.500),
+        Rating(41.667, 0.500),
+        Rating(41.667, 0.500),
+        Rating(41.667, 0.500),
+        Rating(41.667, 0.500),
+    )
     t2 = (Rating(42.234, 3.728), Rating(43.291, 3.842))
     rate([t1, t2], [0, 28])
 
 
-@various_backends(['scipy'])
+@various_backends(["scipy"])
 def test_issue4():
     """The `issue #4`_, opened by @sublee.
 
@@ -556,17 +705,18 @@ def test_issue4():
     .. _issue #4: https://github.com/sublee/trueskill/issues/4
     """
     import numpy
+
     r1, r2 = Rating(105.247, 0.439), Rating(27.030, 0.901)
     # make numpy to raise FloatingPointError instead of warning
     # RuntimeWarning
-    old_settings = numpy.seterr(divide='raise')
+    old_settings = numpy.seterr(divide="raise")
     try:
         rate([(r1,), (r2,)])
     finally:
         numpy.seterr(**old_settings)
 
 
-@various_backends([None, 'scipy'])
+@various_backends([None, "scipy"])
 def test_issue5(backend):
     """The `issue #5`_, opened by @warner121.
 
@@ -591,35 +741,41 @@ def test_issue5(backend):
         rate_1vs1(Rating(), Rating(1000))
 
 
-@various_backends(['mpmath'])
+@various_backends(["mpmath"])
 def test_issue5_with_mpmath():
     _rate_1vs1 = almost.wrap(rate_1vs1, 0)
     assert _quality_1vs1(Rating(-323.263, 2.965), Rating(-48.441, 2.190)) == 0
-    assert _rate_1vs1(Rating(-323.263, 2.965), Rating(-48.441, 2.190)) == \
-        [(-273.361, 2.683), (-75.683, 2.080)]
+    assert _rate_1vs1(Rating(-323.263, 2.965), Rating(-48.441, 2.190)) == [
+        (-273.361, 2.683),
+        (-75.683, 2.080),
+    ]
     assert _quality_1vs1(Rating(), Rating(1000)) == 0
-    assert _rate_1vs1(Rating(), Rating(1000)) == \
-        [(415.298, 6.455), (609.702, 6.455)]
+    assert _rate_1vs1(Rating(), Rating(1000)) == [(415.298, 6.455), (609.702, 6.455)]
 
 
-@various_backends(['mpmath'])
+@various_backends(["mpmath"])
 def test_issue5_with_more_extreme():
     """If the input is more extreme, 'mpmath' backend also made an exception.
     But we can avoid the problem with higher precision.
     """
     import mpmath
+
     try:
         dps = mpmath.mp.dps
         with raises(FloatingPointError):
             rate_1vs1(Rating(), Rating(1000000))
         mpmath.mp.dps = 50
-        assert almost(rate_1vs1(Rating(), Rating(1000000)), prec=-1) == \
-            [(400016.896, 6.455), (600008.104, 6.455)]
+        assert almost(rate_1vs1(Rating(), Rating(1000000)), prec=-1) == [
+            (400016.896, 6.455),
+            (600008.104, 6.455),
+        ]
         with raises(FloatingPointError):
             rate_1vs1(Rating(), Rating(1000000000000))
         mpmath.mp.dps = 100
-        assert almost(rate_1vs1(Rating(), Rating(1000000000000)), prec=-7) == \
-            [(400001600117.693, 6.455), (599998399907.307, 6.455)]
+        assert almost(rate_1vs1(Rating(), Rating(1000000000000)), prec=-7) == [
+            (400001600117.693, 6.455),
+            (599998399907.307, 6.455),
+        ]
     finally:
         mpmath.mp.dps = dps
 
@@ -629,10 +785,12 @@ def test_issue9_weights_dict_with_object_keys():
 
     .. _issue #9: https://github.com/sublee/trueskill/issues/9
     """
+
     class Player(object):
         def __init__(self, rating, team):
             self.rating = rating
             self.team = team
+
     p1 = Player(Rating(), 0)
     p2 = Player(Rating(), 0)
     p3 = Player(Rating(), 1)

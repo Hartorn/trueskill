@@ -11,36 +11,53 @@
 """
 from __future__ import absolute_import
 
-from itertools import chain
 import math
+from itertools import chain
 
 from six import iteritems
 from six.moves import map, range, zip
 
 from .__about__ import __version__  # noqa
 from .backends import choose_backend
-from .factorgraph import (LikelihoodFactor, PriorFactor, SumFactor,
-                          TruncateFactor, Variable)
+from .factorgraph import (
+    LikelihoodFactor,
+    PriorFactor,
+    SumFactor,
+    TruncateFactor,
+    Variable,
+)
 from .mathematics import Gaussian, Matrix
-
 
 __all__ = [
     # TrueSkill objects
-    'TrueSkill', 'Rating',
+    "TrueSkill",
+    "Rating",
     # functions for the global environment
-    'rate', 'quality', 'rate_1vs1', 'quality_1vs1', 'expose', 'setup',
-    'global_env',
+    "rate",
+    "quality",
+    "rate_1vs1",
+    "quality_1vs1",
+    "expose",
+    "setup",
+    "global_env",
     # default values
-    'MU', 'SIGMA', 'BETA', 'TAU', 'DRAW_PROBABILITY',
+    "MU",
+    "SIGMA",
+    "BETA",
+    "TAU",
+    "DRAW_PROBABILITY",
     # draw probability helpers
-    'calc_draw_probability', 'calc_draw_margin',
+    "calc_draw_probability",
+    "calc_draw_margin",
     # deprecated features
-    'transform_ratings', 'match_quality', 'dynamic_draw_probability',
+    "transform_ratings",
+    "match_quality",
+    "dynamic_draw_probability",
 ]
 
 
 #: Default initial mean of ratings.
-MU = 25.
+MU = 25.0
 #: Default initial standard deviation of ratings.
 SIGMA = MU / 3
 #: Default distance that guarantees about 76% chance of winning.
@@ -48,7 +65,7 @@ BETA = SIGMA / 2
 #: Default dynamic factor.
 TAU = SIGMA / 100
 #: Default draw probability of the game.
-DRAW_PROBABILITY = .10
+DRAW_PROBABILITY = 0.10
 #: A basis to check reliability of the result.
 DELTA = 0.0001
 
@@ -78,7 +95,7 @@ def calc_draw_margin(draw_probability, size, env=None):
     """
     if env is None:
         env = global_env()
-    return env.ppf((draw_probability + 1) / 2.) * math.sqrt(size) * env.beta
+    return env.ppf((draw_probability + 1) / 2.0) * math.sqrt(size) * env.beta
 
 
 def _team_sizes(rating_groups):
@@ -91,7 +108,7 @@ def _team_sizes(rating_groups):
 
 
 def _floating_point_error(env):
-    if env.backend == 'mpmath':
+    if env.backend == "mpmath":
         msg = 'Set "mpmath.mp.dps" to higher'
     else:
         msg = 'Cannot calculate correctly, set backend to "mpmath"'
@@ -135,8 +152,8 @@ class Rating(Gaussian):
 
     def __repr__(self):
         c = type(self)
-        args = ('.'.join([c.__module__, c.__name__]), self.mu, self.sigma)
-        return '%s(mu=%.3f, sigma=%.3f)' % args
+        args = (".".join([c.__module__, c.__name__]), self.mu, self.sigma)
+        return "%s(mu=%.3f, sigma=%.3f)" % args
 
 
 class TrueSkill(object):
@@ -174,8 +191,15 @@ class TrueSkill(object):
 
     """
 
-    def __init__(self, mu=MU, sigma=SIGMA, beta=BETA, tau=TAU,
-                 draw_probability=DRAW_PROBABILITY, backend=None):
+    def __init__(
+        self,
+        mu=MU,
+        sigma=SIGMA,
+        beta=BETA,
+        tau=TAU,
+        draw_probability=DRAW_PROBABILITY,
+        backend=None,
+    ):
         self.mu = mu
         self.sigma = sigma
         self.beta = beta
@@ -237,7 +261,7 @@ class TrueSkill(object):
         if not denom:
             raise _floating_point_error(self)
         v = self.v_draw(abs_diff, draw_margin)
-        return (v ** 2) + (a * self.pdf(a) - b * self.pdf(b)) / denom
+        return (v**2) + (a * self.pdf(a) - b * self.pdf(b)) / denom
 
     def validate_rating_groups(self, rating_groups):
         """Validates a ``rating_groups`` argument.  It should contain more than
@@ -263,15 +287,15 @@ class TrueSkill(object):
         """
         # check group sizes
         if len(rating_groups) < 2:
-            raise ValueError('Need multiple rating groups')
+            raise ValueError("Need multiple rating groups")
         elif not all(rating_groups):
-            raise ValueError('Each group must contain multiple ratings')
+            raise ValueError("Each group must contain multiple ratings")
         # check group types
         group_types = set(map(type, rating_groups))
         if len(group_types) != 1:
-            raise TypeError('All groups should be same type')
+            raise TypeError("All groups should be same type")
         elif group_types.pop() is Rating:
-            raise TypeError('Rating cannot be a rating group')
+            raise TypeError("Rating cannot be a rating group")
         # normalize rating_groups
         if isinstance(rating_groups[0], dict):
             dict_rating_groups = rating_groups
@@ -333,13 +357,16 @@ class TrueSkill(object):
         team_perf_vars = [Variable() for x in range(group_size)]
         team_diff_vars = [Variable() for x in range(group_size - 1)]
         team_sizes = _team_sizes(rating_groups)
+
         # layer builders
         def build_rating_layer():
             for rating_var, rating in zip(rating_vars, flatten_ratings):
                 yield PriorFactor(rating_var, rating, self.tau)
+
         def build_perf_layer():
             for rating_var, perf_var in zip(rating_vars, perf_vars):
-                yield LikelihoodFactor(rating_var, perf_var, self.beta ** 2)
+                yield LikelihoodFactor(rating_var, perf_var, self.beta**2)
+
         def build_team_perf_layer():
             for team, team_perf_var in enumerate(team_perf_vars):
                 if team > 0:
@@ -350,56 +377,67 @@ class TrueSkill(object):
                 child_perf_vars = perf_vars[start:end]
                 coeffs = flatten_weights[start:end]
                 yield SumFactor(team_perf_var, child_perf_vars, coeffs)
+
         def build_team_diff_layer():
             for team, team_diff_var in enumerate(team_diff_vars):
-                yield SumFactor(team_diff_var,
-                                team_perf_vars[team:team + 2], [+1, -1])
+                yield SumFactor(team_diff_var, team_perf_vars[team : team + 2], [+1, -1])
+
         def build_trunc_layer():
             for x, team_diff_var in enumerate(team_diff_vars):
                 if callable(self.draw_probability):
                     # dynamic draw probability
-                    team_perf1, team_perf2 = team_perf_vars[x:x + 2]
+                    team_perf1, team_perf2 = team_perf_vars[x : x + 2]
                     args = (Rating(team_perf1), Rating(team_perf2), self)
                     draw_probability = self.draw_probability(*args)
                 else:
                     # static draw probability
                     draw_probability = self.draw_probability
-                size = sum(map(len, rating_groups[x:x + 2]))
+                size = sum(map(len, rating_groups[x : x + 2]))
                 draw_margin = calc_draw_margin(draw_probability, size, self)
                 if ranks[x] == ranks[x + 1]:  # is a tie?
                     v_func, w_func = self.v_draw, self.w_draw
                 else:
                     v_func, w_func = self.v_win, self.w_win
-                yield TruncateFactor(team_diff_var,
-                                     v_func, w_func, draw_margin)
-        # build layers
-        return (build_rating_layer, build_perf_layer, build_team_perf_layer,
-                build_team_diff_layer, build_trunc_layer)
+                yield TruncateFactor(team_diff_var, v_func, w_func, draw_margin)
 
-    def run_schedule(self, build_rating_layer, build_perf_layer,
-                     build_team_perf_layer, build_team_diff_layer,
-                     build_trunc_layer, min_delta=DELTA):
+        # build layers
+        return (
+            build_rating_layer,
+            build_perf_layer,
+            build_team_perf_layer,
+            build_team_diff_layer,
+            build_trunc_layer,
+        )
+
+    def run_schedule(
+        self,
+        build_rating_layer,
+        build_perf_layer,
+        build_team_perf_layer,
+        build_team_diff_layer,
+        build_trunc_layer,
+        min_delta=DELTA,
+    ):
         """
         Sends messages between every node of the factor graph until the
         result is reliable.
         """
         if min_delta <= 0:
-            raise ValueError('min_delta must be greater than 0')
+            raise ValueError("min_delta must be greater than 0")
         layers = []
+
         def build(builders):
             layers_built = [list(build()) for build in builders]
             layers.extend(layers_built)
             return layers_built
+
         # gray arrows
-        layers_built = build([build_rating_layer,
-                              build_perf_layer,
-                              build_team_perf_layer])
+        layers_built = build([build_rating_layer, build_perf_layer, build_team_perf_layer])
         rating_layer, perf_layer, team_perf_layer = layers_built
         for f in chain(*layers_built):
             f.down()
         # arrow #1, #2, #3
-        team_diff_layer, trunc_layer = build([build_team_diff_layer,
-                                              build_trunc_layer])
+        team_diff_layer, trunc_layer = build([build_team_diff_layer, build_trunc_layer])
         team_diff_len = len(team_diff_layer)
         for x in range(10):
             if team_diff_len == 1:
@@ -481,11 +519,10 @@ class TrueSkill(object):
         if ranks is None:
             ranks = range(group_size)
         elif len(ranks) != group_size:
-            raise ValueError('Wrong ranks')
+            raise ValueError("Wrong ranks")
         # sort rating groups by rank
         by_rank = lambda x: x[1][1]
-        sorting = sorted(enumerate(zip(rating_groups, ranks, weights)),
-                         key=by_rank)
+        sorting = sorted(enumerate(zip(rating_groups, ranks, weights)), key=by_rank)
         sorted_rating_groups, sorted_ranks, sorted_weights = [], [], []
         for x, (g, r, w) in sorting:
             sorted_rating_groups.append(g)
@@ -506,8 +543,7 @@ class TrueSkill(object):
                 group.append(Rating(float(f.var.mu), float(f.var.sigma)))
             transformed_groups.append(tuple(group))
         by_hint = lambda x: x[0]
-        unsorting = sorted(zip((x for x, __ in sorting), transformed_groups),
-                           key=by_hint)
+        unsorting = sorted(zip((x for x, __ in sorting), transformed_groups), key=by_hint)
         if keys is None:
             return [g for x, g in unsorting]
         # restore the structure with input dictionary keys
@@ -535,18 +571,20 @@ class TrueSkill(object):
         length = len(flatten_ratings)
         # a vector of all of the skill means
         mean_matrix = Matrix([[r.mu] for r in flatten_ratings])
+
         # a matrix whose diagonal values are the variances (sigma ** 2) of each
         # of the players.
         def variance_matrix(height, width):
-            variances = (r.sigma ** 2 for r in flatten_ratings)
+            variances = (r.sigma**2 for r in flatten_ratings)
             for x, variance in enumerate(variances):
                 yield (x, x), variance
+
         variance_matrix = Matrix(variance_matrix, length, length)
+
         # the player-team assignment and comparison matrix
         def rotated_a_matrix(set_height, set_width):
             t = 0
-            for r, (cur, _next) in enumerate(zip(rating_groups[:-1],
-                                                rating_groups[1:])):
+            for r, (cur, _next) in enumerate(zip(rating_groups[:-1], rating_groups[1:])):
                 for x in range(t, t + len(cur)):
                     yield (r, x), flatten_weights[x]
                     t += 1
@@ -555,10 +593,11 @@ class TrueSkill(object):
                     yield (r, x), -flatten_weights[x]
             set_height(r + 1)
             set_width(x + 1)
+
         rotated_a_matrix = Matrix(rotated_a_matrix)
         a_matrix = rotated_a_matrix.transpose()
         # match quality further derivation
-        _ata = (self.beta ** 2) * rotated_a_matrix * a_matrix
+        _ata = (self.beta**2) * rotated_a_matrix * a_matrix
         _atsa = rotated_a_matrix * variance_matrix * a_matrix
         start = mean_matrix.transpose() * a_matrix
         middle = _ata + _atsa
@@ -600,19 +639,25 @@ class TrueSkill(object):
         c = type(self)
         if callable(self.draw_probability):
             f = self.draw_probability
-            draw_probability = '.'.join([f.__module__, f.__name__])
+            draw_probability = ".".join([f.__module__, f.__name__])
         else:
-            draw_probability = '%.1f%%' % (self.draw_probability * 100)
+            draw_probability = "%.1f%%" % (self.draw_probability * 100)
         if self.backend is None:
-            backend = ''
+            backend = ""
         elif isinstance(self.backend, tuple):
-            backend = ', backend=...'
+            backend = ", backend=..."
         else:
-            backend = ', backend=%r' % self.backend
-        args = ('.'.join([c.__module__, c.__name__]), self.mu, self.sigma,
-                self.beta, self.tau, draw_probability, backend)
-        return ('%s(mu=%.3f, sigma=%.3f, beta=%.3f, tau=%.3f, '
-                'draw_probability=%s%s)' % args)
+            backend = ", backend=%r" % self.backend
+        args = (
+            ".".join([c.__module__, c.__name__]),
+            self.mu,
+            self.sigma,
+            self.beta,
+            self.tau,
+            draw_probability,
+            backend,
+        )
+        return "%s(mu=%.3f, sigma=%.3f, beta=%.3f, tau=%.3f, " "draw_probability=%s%s)" % args
 
 
 def rate_1vs1(rating1, rating2, drawn=False, min_delta=DELTA, env=None):
@@ -671,8 +716,15 @@ def global_env():
     return global_env.__trueskill__
 
 
-def setup(mu=MU, sigma=SIGMA, beta=BETA, tau=TAU,
-          draw_probability=DRAW_PROBABILITY, backend=None, env=None):
+def setup(
+    mu=MU,
+    sigma=SIGMA,
+    beta=BETA,
+    tau=TAU,
+    draw_probability=DRAW_PROBABILITY,
+    backend=None,
+    env=None,
+):
     """Setups the global environment.
 
     :param env: the specific :class:`TrueSkill` object to be the global
@@ -723,5 +775,9 @@ def expose(rating):
 # Append deprecated methods into :class:`TrueSkill` and :class:`Rating`
 from . import deprecated  # noqa
 from .deprecated import (  # noqa
-    dynamic_draw_probability, match_quality, transform_ratings)
+    dynamic_draw_probability,
+    match_quality,
+    transform_ratings,
+)
+
 deprecated.ensure_backward_compatibility(TrueSkill, Rating)
