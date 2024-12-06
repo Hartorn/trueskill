@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
    trueskill.mathematics
    ~~~~~~~~~~~~~~~~~~~~~
@@ -10,7 +9,6 @@
    :license: BSD, see LICENSE for more details.
 
 """
-from __future__ import absolute_import
 
 import copy
 import math

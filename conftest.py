@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import with_statement
-
 from trueskill.backends import available_backends
 
 backends = available_backends()

@@ -68,7 +68,7 @@ jobs:
         virtualenvs-in-project: true
         installer-parallel: true
 
-    - name: Install deps & build base images
+    - name: Install deps
       run: make setup
 
     - name: Run the tests

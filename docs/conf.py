@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # trueskill documentation build configuration file, created by
 # sphinx-quickstart on Tue Jan 17 22:33:12 2012.
