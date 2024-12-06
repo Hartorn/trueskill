@@ -1,17 +1,6 @@
-"""
-   trueskill.backends
-   ~~~~~~~~~~~~~~~~~~
-
-   Provides mathematical statistics backend chooser.
-
-   :copyright: (c) 2012-2016 by Heungsub Lee.
-   :license: BSD, see LICENSE for more details.
-
-"""
-
 import math
 
-__all__ = ["available_backends", "choose_backend", "cdf", "pdf", "ppf"]
+__all__ = ["cdf", "pdf", "ppf", "gen_ppf"]
 
 
 def _gen_erfcinv(erfc, math=math):
@@ -38,7 +27,7 @@ def _gen_erfcinv(erfc, math=math):
     return erfcinv
 
 
-def _gen_ppf(erfc, math=math):
+def gen_ppf(erfc, math=math):
     """ppf is the inverse function of cdf.  This function generates cdf by the
     given erfc and math module.
     """
@@ -89,58 +78,4 @@ def pdf(x, mu=0, sigma=1):
     return 1 / math.sqrt(2 * math.pi) * abs(sigma) * math.exp(-(((x - mu) / abs(sigma)) ** 2 / 2))
 
 
-ppf = _gen_ppf(erfc)
-
-
-def choose_backend(backend):
-    """Returns a tuple containing cdf, pdf, ppf from the chosen backend.
-
-    >>> cdf, pdf, ppf = choose_backend(None)
-    >>> cdf(-10)
-    7.619853263532764e-24
-    >>> cdf, pdf, ppf = choose_backend('mpmath')
-    >>> cdf(-10)
-    mpf('7.6198530241605255e-24')
-
-    .. versionadded:: 0.3
-
-    """
-    if backend is None:  # fallback
-        return cdf, pdf, ppf
-    if backend == "mpmath":
-        try:
-            import mpmath
-        except ImportError as e:
-            raise ImportError('Install "mpmath" to use this backend') from e
-        return mpmath.ncdf, mpmath.npdf, _gen_ppf(mpmath.erfc, math=mpmath)
-    if backend == "scipy":
-        try:
-            from scipy.stats import norm
-        except ImportError as e:
-            raise ImportError('Install "scipy" to use this backend') from e
-        return norm.cdf, norm.pdf, norm.ppf
-    raise ValueError(f"{backend} backend is not defined")
-
-
-def available_backends():
-    """Detects list of available backends.  All of defined backends are
-    ``None`` -- internal implementation, "mpmath", "scipy".
-
-    You can check if the backend is available in the current environment with
-    this function::
-
-       if 'mpmath' in available_backends():
-           # mpmath can be used in the current environment
-           setup(backend='mpmath')
-
-    .. versionadded:: 0.3
-
-    """
-    backends = [None]
-    for backend in ["mpmath", "scipy"]:
-        try:
-            __import__(backend)
-        except ImportError:
-            continue
-        backends.append(backend)
-    return backends
+ppf = gen_ppf(erfc)
